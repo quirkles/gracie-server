@@ -13,6 +13,7 @@ export const RoleQuery = extendType({
 		t.nonNull.list.field('getRoles', {
 			type: 'Role',
 			resolve(_root, _args, ctx) {
+				ctx.logger.info('test');
 				return ctx.prisma.role.findMany();
 			}
 		});

@@ -8,19 +8,53 @@ datasource db {
 }
 
 model Role {
-  id    String  @id @default(dbgenerated("public.uuid_generate_v4()")) @db.Uuid
+  @@map("roles")
+
+  id    String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
   name  String? @unique @db.VarChar(255)
   users User[]
-
-  @@map("roles")
 }
 
 model User {
-  id       String  @id @default(dbgenerated("public.uuid_generate_v4()")) @db.Uuid
+  @@map("users")
+  id       String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
   name     String? @db.VarChar(255)
   password String? @db.VarChar(255)
   roleId   String  @map("role_id") @db.Uuid
   role     Role    @relation(fields: [roleId], references: [id])
+  posts    UsersOnPosts[]
+  isAdmin  Boolean @map("is_admin") @db.Boolean @default(false)
 
-  @@map("users")
+}
+
+model Post {
+  id               String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
+  title            String? @db.VarChar(50)
+  body String?     @db.Text
+  contributors     UsersOnPosts[]
+
+
+  @@map("posts")
+}
+
+model UserPostRole {
+  id       String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
+  name     String? @db.VarChar(50)
+  usersOnPosts UsersOnPosts[]
+
+  @@map("user_post_role")
+}
+
+
+
+model UsersOnPosts {
+  post            Post          @relation(fields: [postId], references: [id])
+  postId          String        @map("post_id") @db.Uuid
+  user            User          @relation(fields: [userId], references: [id])
+  userId          String        @map("user_id") @db.Uuid
+  userPostRoleId  String        @map("user_post_role_id") @db.Uuid
+  userPostRole    UserPostRole  @relation(fields: [userPostRoleId], references: [id])
+
+  @@id([postId, userId])
+  @@map("users_on_posts")
 }

@@ -1,6 +1,8 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" with schema gracie;
+
 -- CreateTable
 CREATE TABLE "roles" (
-    "id" UUID NOT NULL DEFAULT public.uuid_generate_v4(),
+    "id" UUID NOT NULL DEFAULT gracie.uuid_generate_v4(),
     "name" VARCHAR(255),
 
     PRIMARY KEY ("id")
@@ -8,7 +10,7 @@ CREATE TABLE "roles" (
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" UUID NOT NULL DEFAULT public.uuid_generate_v4(),
+    "id" UUID NOT NULL DEFAULT gracie.uuid_generate_v4(),
     "name" VARCHAR(255),
     "password" VARCHAR(255),
     "role_id" UUID NOT NULL,

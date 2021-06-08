@@ -22,10 +22,7 @@ const setEnvVarFromLine = (line: string): void => {
 		const name = matches[1];
 		const value = matches[2];
 		if (envVarsToSet.includes(name)) {
-			console.log("Setting env var", name) //eslint-disable-line
-			process.env[name] = value;
-		} else {
-			console.log("Not setting env var", name) //eslint-disable-line
+			// process.env[name] = value;
 		}
 	}
 };

@@ -1,8 +1,7 @@
 import jwt from 'jsonwebtoken';
 
-interface IJwtPayload {
-    name: string;
-    role: string;
+export interface IJwtPayload {
+    id: string
 }
 
 export const getToken = (payload: IJwtPayload): string => {

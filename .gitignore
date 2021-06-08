@@ -4,3 +4,4 @@ node_modules
 .env
 */schema.graphql
 */nexus-typegen.ts
+logs/*.log
