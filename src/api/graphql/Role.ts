@@ -14,7 +14,7 @@ export const RoleQuery = extendType({
 			type: 'Role',
 			resolve(_root, _args, ctx) {
 				ctx.logger.info('test');
-				return ctx.prisma.role.findMany();
+				return ctx.prisma.role.findMany() || [];
 			}
 		});
 	}

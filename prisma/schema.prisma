@@ -8,15 +8,15 @@ datasource db {
 }
 
 model Role {
-  @@map("roles")
-
   id    String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
   name  String? @unique @db.VarChar(255)
   users User[]
+
+  @@map("roles")
 }
 
 model User {
-  @@map("users")
+
   id       String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
   name     String? @db.VarChar(255)
   password String? @db.VarChar(255)
@@ -25,36 +25,53 @@ model User {
   posts    UsersOnPosts[]
   isAdmin  Boolean @map("is_admin") @db.Boolean @default(false)
 
+  @@map("users")
 }
 
 model Post {
   id               String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
-  title            String? @db.VarChar(50)
-  body String?     @db.Text
+  title            String @db.VarChar(50)
+  body             String?     @db.Text
   contributors     UsersOnPosts[]
-
 
   @@map("posts")
 }
 
 model UserPostRole {
   id       String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
-  name     String? @db.VarChar(50)
+  name     String @unique @db.VarChar(50)
   usersOnPosts UsersOnPosts[]
 
   @@map("user_post_role")
 }
-
-
 
 model UsersOnPosts {
   post            Post          @relation(fields: [postId], references: [id])
   postId          String        @map("post_id") @db.Uuid
   user            User          @relation(fields: [userId], references: [id])
   userId          String        @map("user_id") @db.Uuid
-  userPostRoleId  String        @map("user_post_role_id") @db.Uuid
   userPostRole    UserPostRole  @relation(fields: [userPostRoleId], references: [id])
+  userPostRoleId  String        @map("user_post_role_id") @db.Uuid
 
   @@id([postId, userId])
   @@map("users_on_posts")
+}
+
+model MediaType {
+  id    String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
+  type  String  @unique @db.VarChar(50)
+  media Media[]
+
+  @@map("media_type")
+}
+
+model Media {
+  id           String  @id                   @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
+  title        String  @db.VarChar(50)
+  caption      String? @db.Text
+  url          String  @db.VarChar(50)
+  mediaTypeId  String  @map("media_type_id") @db.Uuid
+  mediaType    MediaType @relation(fields: [mediaTypeId], references: [id])
+
+  @@map("media")
 }

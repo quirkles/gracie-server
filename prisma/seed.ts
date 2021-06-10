@@ -17,7 +17,7 @@ async function main() {
 
 	const password = await encrypt(process.env.ALEX_PASSWORD as string);
 
-	const alex = await prisma.user.create({
+	await prisma.user.create({
 		data: {
 			name: 'Alex',
 			password,
@@ -29,7 +29,12 @@ async function main() {
 			}
 		}
 	});
-	console.log(alex, 'Created seed user') //eslint-disable-line
+
+	const mediaTypes = ['image'];
+	await prisma.mediaType.createMany({
+		data: mediaTypes.map(type => ({type})),
+		skipDuplicates: true
+	});
 }
 
 main()
