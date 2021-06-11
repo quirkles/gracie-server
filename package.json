@@ -4,9 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --transpile-only --no-notify src/api/index.ts",
+    "dev": "ENV=local ts-node-dev --transpile-only --no-notify src/api/index.ts",
     "logs:pp": "tail -f logs/log.log | pino-pretty",
-    "build": "tsc --build "
+    "prisma:generate": "prisma generate",
+    "build": "tsc --build ",
+    "docker:build": "docker build -t gracie-server .",
+    "docker:run": "docker run -d -p 8080:8080 gracie-server",
+    "docker:run:it": "docker run -it -p 8080:8080 gracie-server"
   },
   "keywords": [],
   "author": "",

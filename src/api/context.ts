@@ -39,8 +39,7 @@ export const createContext = ({req} : {req: Request}): Context => {
 	if (authHeader && authHeader.length) {
 		try {
 			const token = authHeader.split('Bearer ')[1];
-			const decoded = verifyToken(token);
-			session = decoded;
+			session = verifyToken(token);
 		} catch (err) {
 			baseLogger.error(err, 'Failed to verify jwt');
 		}
