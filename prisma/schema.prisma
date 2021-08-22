@@ -7,21 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Role {
-  id    String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
-  name  String? @unique @db.VarChar(255)
-  users User[]
-
-  @@map("roles")
+enum Role {
+    AUNTIE
+    DAD
+    FRIEND
+    GRANDDAD
+    GRANDMA
+    ME
+    MUM
+    NO_RELATION
+    UNCLE
 }
 
 model User {
-
   id       String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
   name     String? @db.VarChar(255)
   password String? @db.VarChar(255)
-  roleId   String  @map("role_id") @db.Uuid
-  role     Role    @relation(fields: [roleId], references: [id])
+  role  Role    @default(NO_RELATION)
   posts    UsersOnPosts[]
   isAdmin  Boolean @map("is_admin") @db.Boolean @default(false)
 
@@ -57,12 +59,8 @@ model UsersOnPosts {
   @@map("users_on_posts")
 }
 
-model MediaType {
-  id    String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
-  type  String  @unique @db.VarChar(50)
-  media Media[]
-
-  @@map("media_type")
+enum MediaType {
+    IMAGE
 }
 
 model Media {
@@ -70,8 +68,7 @@ model Media {
   title        String  @db.VarChar(50)
   caption      String? @db.Text
   url          String  @db.VarChar(50)
-  mediaTypeId  String  @map("media_type_id") @db.Uuid
-  mediaType    MediaType @relation(fields: [mediaTypeId], references: [id])
+  role  MediaType    @default(IMAGE)
 
   @@map("media")
 }

@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:14.17-alpine
 
 # update packages
 RUN apk update
@@ -15,8 +15,12 @@ RUN mkdir logs
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY prisma/schema.prisma ./prisma
-# copy source code to /app/src folder
-COPY src /app/src
+# copy source code to /src folder
+COPY src ./src
+COPY src/nexus-typegen.ts ./src
+COPY src/schema.graphql ./src
+
+RUN ls src
 
 RUN npm install
 RUN npm run prisma:generate

@@ -61,8 +61,7 @@ export const encryptTest = extendType({
 			async resolve(_root, args, _ctx) {
 				const {text} = args;
 				const encrypted = await encrypt(text);
-				const decrypted = await decrypt(encrypted);
-				return decrypted;
+				return decrypt(encrypted);
 			}
 		});
 	}
@@ -115,6 +114,7 @@ export const authorize = mutationField('authorize', {
 	async resolve(_root, args, ctx) {
 		const {name, password} = args;
 		const encryptedPassword = await encrypt(password);
+		console.log(encryptedPassword) //eslint-disable-line
 		const user = await ctx.prisma.user.findFirst({
 			where: {name, password: encryptedPassword},
 			include: {role: true}

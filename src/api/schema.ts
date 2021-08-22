@@ -8,6 +8,7 @@ console.log('process.env.ENV', process.env.ENV) //eslint-disable-line
 
 export const schema = makeSchema({
 	types,
+	shouldGenerateArtifacts: true,
 	outputs: {
 		typegen: join(__dirname, '..', `nexus-typegen.${ext}`),
 		schema: join(__dirname, '..', 'schema.graphql')

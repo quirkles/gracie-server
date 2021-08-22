@@ -2,8 +2,8 @@
 node_modules
 
 .env
-*/schema.graphql
-*/nexus-typegen.ts
+#*/schema.graphql
+#*/nexus-typegen.ts
 logs/*.log
 
 dist

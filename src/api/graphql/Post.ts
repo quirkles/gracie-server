@@ -1,6 +1,7 @@
-import {mutationField, nonNull, objectType, stringArg, unionType} from 'nexus';
+import {arg, inputObjectType, mutationField, objectType, unionType} from 'nexus';
 import {User} from './User';
 import {AlternateResponse, resolveAlternateResponse} from './AlternateResponses';
+import {CreateMediaInput} from './Media';
 
 export const Post = objectType({
 	name: 'Post',
@@ -28,7 +29,6 @@ export const CreatePostResponse = unionType({
 		t.members('Post', 'BadInput', 'Unauthorized');
 	},
 	resolveType(item) {
-		console.log(item) //eslint-disable-line
 		let __typename: 'BadInput' | 'Unauthorized' | 'Post' | null = null;
 		if ('message' in item && 'reason' in item) {
 			__typename = resolveAlternateResponse(item as AlternateResponse);
@@ -44,11 +44,18 @@ export const CreatePostResponse = unionType({
 	}
 });
 
+export const CreatePostInput = inputObjectType({
+	name: 'CreatePostInput',
+	definition(t) {
+		t.nonNull.string('title');
+		t.string('body');
+		t.list.field('media', {type: CreateMediaInput});
+	}
+});
 export const createPost = mutationField('createPost', {
 	type: 'CreatePostResponse',
 	args: {
-		title: nonNull(stringArg()),
-		body: nonNull(stringArg())
+		input: arg({type: CreatePostInput})
 	},
 	async resolve(_root, args, ctx) {
 		const {session} = ctx;

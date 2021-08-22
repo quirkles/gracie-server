@@ -1,7 +1,8 @@
-import {extendType, objectType, stringArg} from 'nexus';
+import {arg, enumType, extendType, inputObjectType, mutationField, objectType, stringArg} from 'nexus';
 import {Prisma} from '@prisma/client';
+import {encrypt} from '../encrypt';
 
-export const MediaO = objectType({
+export const Media = objectType({
 	name: 'Media',
 	definition(t) {
 		t.string('id');
@@ -42,5 +43,68 @@ export const MediaQuery = extendType({
 				}));
 			}
 		});
+	}
+});
+
+const MediaType = enumType({
+	name: 'MediaType',
+	members: ['IMAGE']
+});
+
+export const CreateMediaInput = inputObjectType({
+	name: 'CreateMediaInput',
+	definition(t) {
+		t.nonNull.string('title');
+		t.string('caption');
+		t.nonNull.string('url');
+		t.field('type', {type: MediaType});
+	}
+});
+
+export const createMedia = mutationField('createUser', {
+	type: 'CreateUserResponse',
+	args: {
+		input: arg({type: CreateMediaInput})
+	},
+	async resolve(_root, args, ctx) {
+		const {session} = ctx;
+		const {id} = session || {};
+		if (!id) {
+			return {
+				message: 'Not permitted',
+				reason: 'Unauthorized'
+			};
+		}
+
+		const user = await ctx.prisma.user.findUnique({where: {id}});
+
+		if (!user?.isAdmin) {
+			return {
+				message: 'Not permitted',
+				reason: 'Unauthorized'
+			};
+		}
+
+		const {name, password, roleName} = args;
+		const encryptedPassword = await encrypt(password);
+		try {
+			return await ctx.prisma.user.create({
+				data: {
+					name,
+					password: encryptedPassword,
+					role: {
+						connect: {
+							name: roleName
+						}
+					}
+				},
+				include: {role: true}
+			});
+		} catch {
+			return {
+				message: 'Failed to create user',
+				reason: 'BadInput'
+			};
+		}
 	}
 });
