@@ -198,7 +198,7 @@ export interface NexusGenArgTypes {
       password: string; // String!
     }
     createPost: { // args
-      input?: NexusGenInputs['CreatePostInput'] | null; // CreatePostInput
+      input: NexusGenInputs['CreatePostInput']; // CreatePostInput!
     }
     createUser: { // args
       input?: NexusGenInputs['CreateMediaInput'] | null; // CreateMediaInput

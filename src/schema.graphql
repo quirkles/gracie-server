@@ -39,7 +39,7 @@ enum MediaType {
 
 type Mutation {
   authorize(name: String!, password: String!): AuthorizeResponse
-  createPost(input: CreatePostInput): CreatePostResponse
+  createPost(input: CreatePostInput!): CreatePostResponse
   createUser(input: CreateMediaInput): CreateUserResponse
 }
 

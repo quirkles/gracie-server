@@ -1,4 +1,4 @@
-import {arg, inputObjectType, mutationField, objectType, unionType} from 'nexus';
+import {arg, inputObjectType, mutationField, nonNull, objectType, unionType} from 'nexus';
 import {User} from './User';
 import {AlternateResponse, resolveAlternateResponse} from './AlternateResponses';
 import {CreateMediaInput} from './Media';
@@ -55,7 +55,7 @@ export const CreatePostInput = inputObjectType({
 export const createPost = mutationField('createPost', {
 	type: 'CreatePostResponse',
 	args: {
-		input: arg({type: CreatePostInput})
+		input: arg({type: nonNull(CreatePostInput)})
 	},
 	async resolve(_root, args, ctx) {
 		const {session} = ctx;
@@ -67,7 +67,8 @@ export const createPost = mutationField('createPost', {
 			};
 		}
 
-		const {title, body} = args;
+		const {input} = args;
+		const {title, body, media} = input;
 
 		try {
 			return await ctx.prisma.post.create({

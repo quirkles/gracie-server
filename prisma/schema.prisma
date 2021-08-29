@@ -35,6 +35,7 @@ model Post {
   title            String @db.VarChar(50)
   body             String?     @db.Text
   contributors     UsersOnPosts[]
+  media     Media[]
 
   @@map("posts")
 }
@@ -68,6 +69,8 @@ model Media {
   title        String  @db.VarChar(50)
   caption      String? @db.Text
   url          String  @db.VarChar(50)
+  postId String @map("post_id") @db.Uuid
+  post Post @relation(fields: [postId], references: [id])
   role  MediaType    @default(IMAGE)
 
   @@map("media")
