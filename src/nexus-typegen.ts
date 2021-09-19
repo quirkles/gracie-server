@@ -25,6 +25,10 @@ export interface NexusGenInputs {
     media?: Array<NexusGenInputs['CreateMediaInput'] | null> | null; // [CreateMediaInput]
     title: string; // String!
   }
+  GetUploadSignedUrlInput: { // input type
+    bucketName: string; // String!
+    fileName: string; // String!
+  }
 }
 
 export interface NexusGenEnums {
@@ -115,8 +119,8 @@ export interface NexusGenFieldTypes {
   }
   Query: { // field return type
     encryptTest: string; // String!
-    getMedia: Array<NexusGenRootTypes['Media'] | null>; // [Media]!
     getRoles: Array<NexusGenRootTypes['Role'] | null>; // [Role]!
+    getUploadSignedUrl: string; // String!
     getUserById: NexusGenRootTypes['User']; // User!
   }
   Role: { // field return type
@@ -165,8 +169,8 @@ export interface NexusGenFieldTypeNames {
   }
   Query: { // field return type name
     encryptTest: 'String'
-    getMedia: 'Media'
     getRoles: 'Role'
+    getUploadSignedUrl: 'String'
     getUserById: 'User'
   }
   Role: { // field return type name
@@ -208,8 +212,8 @@ export interface NexusGenArgTypes {
     encryptTest: { // args
       text: string; // String!
     }
-    getMedia: { // args
-      type?: string | null; // String
+    getUploadSignedUrl: { // args
+      input: NexusGenInputs['GetUploadSignedUrlInput']; // GetUploadSignedUrlInput!
     }
   }
 }

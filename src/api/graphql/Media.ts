@@ -1,5 +1,7 @@
-import {arg, enumType, extendType, inputObjectType, mutationField, objectType, stringArg} from 'nexus';
-import {Prisma} from '@prisma/client';
+import path from 'path';
+import {GetSignedUrlConfig, Storage} from '@google-cloud/storage';
+import {arg, enumType, extendType, inputObjectType, mutationField, nonNull, objectType} from 'nexus';
+
 import {encrypt} from '../encrypt';
 
 export const Media = objectType({
@@ -12,35 +14,44 @@ export const Media = objectType({
 	}
 });
 
-export const MediaQuery = extendType({
+export const GetUploadSignedUrlInput = inputObjectType({
+	name: 'GetUploadSignedUrlInput',
+	definition(t) {
+		t.nonNull.string('bucketName');
+		t.nonNull.string('fileName');
+	}
+});
+
+export const GetUploadSignedUrl = extendType({
 	type: 'Query',
 	definition(t) {
-		t.nonNull.list.field('getMedia', {
+		t.nonNull.field('getUploadSignedUrl', {
 			args: {
-				type: stringArg()
+				input: arg({type: nonNull(GetUploadSignedUrlInput)})
 			},
-			type: 'Media',
+			type: 'String',
 			async resolve(_root, args, ctx) {
-				const {type} = args;
-				let media: Prisma.MediaGetPayload<{include: {mediaType: true}}>[];
-				if (type) {
-					media = await ctx.prisma.media.findMany({
-						include: {mediaType: true},
-						where: {
-							mediaType: {
-								type
-							}
-						}});
-				} else {
-					media = await ctx.prisma.media.findMany({include: {mediaType: true}});
-				}
+				const {input} = args;
+				const {fileName, bucketName} = input;
+				const pathToCreds = path.join(__dirname, '../../creds/image-uploader.json');
+				const storage = new Storage({keyFilename: pathToCreds});
 
-				return media.map(m => ({
-					id: m.id,
-					title: m.title,
-					caption: m.caption,
-					type: m.mediaType.type
-				}));
+				const bucket = storage.bucket(bucketName);
+				const file = bucket.file(fileName);
+
+				const config: GetSignedUrlConfig = {
+					action: 'write',
+					expires: Date.now() + (60 * 60 * 1000) // Expire it in an hour
+				};
+
+				let url: string;
+				try {
+					[url] = await file.getSignedUrl(config);
+					return url;
+				} catch (err) {
+					ctx.logger.error(err);
+					return '';
+				}
 			}
 		});
 	}

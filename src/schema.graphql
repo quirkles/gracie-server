@@ -26,6 +26,11 @@ union CreatePostResponse = BadInput | Post | Unauthorized
 
 union CreateUserResponse = BadInput | Unauthorized | User
 
+input GetUploadSignedUrlInput {
+  bucketName: String!
+  fileName: String!
+}
+
 type Media {
   caption: String
   id: String
@@ -52,8 +57,8 @@ type Post {
 
 type Query {
   encryptTest(text: String!): String!
-  getMedia(type: String): [Media]!
   getRoles: [Role]!
+  getUploadSignedUrl(input: GetUploadSignedUrlInput!): String!
   getUserById: User!
 }
 
