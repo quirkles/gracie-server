@@ -4,7 +4,7 @@
  */
 
 
-import { Context } from "./api/context"
+import type { Context } from "./api/context"
 
 
 
@@ -26,7 +26,6 @@ export interface NexusGenInputs {
     title: string; // String!
   }
   GetUploadSignedUrlInput: { // input type
-    bucketName: string; // String!
     fileName: string; // String!
   }
 }
@@ -205,7 +204,9 @@ export interface NexusGenArgTypes {
       input: NexusGenInputs['CreatePostInput']; // CreatePostInput!
     }
     createUser: { // args
-      input?: NexusGenInputs['CreateMediaInput'] | null; // CreateMediaInput
+      name: string; // String!
+      password: string; // String!
+      roleName: string; // String!
     }
   }
   Query: {
@@ -280,6 +281,8 @@ export interface NexusGenTypes {
 
 declare global {
   interface NexusGenPluginTypeConfig<TypeName extends string> {
+  }
+  interface NexusGenPluginInputTypeConfig<TypeName extends string> {
   }
   interface NexusGenPluginFieldConfig<TypeName extends string, FieldName extends string> {
   }

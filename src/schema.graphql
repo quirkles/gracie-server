@@ -27,7 +27,6 @@ union CreatePostResponse = BadInput | Post | Unauthorized
 union CreateUserResponse = BadInput | Unauthorized | User
 
 input GetUploadSignedUrlInput {
-  bucketName: String!
   fileName: String!
 }
 
@@ -45,7 +44,7 @@ enum MediaType {
 type Mutation {
   authorize(name: String!, password: String!): AuthorizeResponse
   createPost(input: CreatePostInput!): CreatePostResponse
-  createUser(input: CreateMediaInput): CreateUserResponse
+  createUser(name: String!, password: String!, roleName: String!): CreateUserResponse
 }
 
 type Post {
