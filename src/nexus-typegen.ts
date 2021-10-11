@@ -16,13 +16,14 @@ declare global {
 export interface NexusGenInputs {
   CreateMediaInput: { // input type
     caption?: string | null; // String
-    title: string; // String!
-    type?: NexusGenEnums['MediaType'] | null; // MediaType
+    title?: string | null; // String
+    type: NexusGenEnums['MediaType']; // MediaType!
     url: string; // String!
   }
   CreatePostInput: { // input type
     body?: string | null; // String
-    media?: Array<NexusGenInputs['CreateMediaInput'] | null> | null; // [CreateMediaInput]
+    date?: string | null; // String
+    media?: NexusGenInputs['CreateMediaInput'][] | null; // [CreateMediaInput!]
     title: string; // String!
   }
   GetUploadSignedUrlInput: { // input type
@@ -32,6 +33,7 @@ export interface NexusGenInputs {
 
 export interface NexusGenEnums {
   MediaType: "IMAGE"
+  RoleType: "AUNTIE" | "DAD" | "FRIEND" | "GRANDDAD" | "GRANDMA" | "ME" | "MUM" | "NO_RELATION" | "UNCLE"
 }
 
 export interface NexusGenScalars {
@@ -51,19 +53,17 @@ export interface NexusGenObjects {
     caption?: string | null; // String
     id?: string | null; // String
     title?: string | null; // String
-    type?: string | null; // String
+    type?: NexusGenEnums['MediaType'] | null; // MediaType
+    url: string; // String!
   }
   Mutation: {};
   Post: { // root type
     body?: string | null; // String
+    date?: string | null; // String
     id?: string | null; // String
     title?: string | null; // String
   }
   Query: {};
-  Role: { // root type
-    id?: string | null; // String
-    name?: string | null; // String
-  }
   Unauthorized: { // root type
     message?: string | null; // String
     reason?: string | null; // String
@@ -71,6 +71,7 @@ export interface NexusGenObjects {
   User: { // root type
     id?: string | null; // String
     name?: string | null; // String
+    role?: string | null; // String
   }
   UserNotFound: { // root type
     message?: string | null; // String
@@ -103,7 +104,8 @@ export interface NexusGenFieldTypes {
     caption: string | null; // String
     id: string | null; // String
     title: string | null; // String
-    type: string | null; // String
+    type: NexusGenEnums['MediaType'] | null; // MediaType
+    url: string; // String!
   }
   Mutation: { // field return type
     authorize: NexusGenRootTypes['AuthorizeResponse'] | null; // AuthorizeResponse
@@ -113,18 +115,16 @@ export interface NexusGenFieldTypes {
   Post: { // field return type
     body: string | null; // String
     contributors: Array<NexusGenRootTypes['User'] | null> | null; // [User]
+    date: string | null; // String
     id: string | null; // String
+    media: Array<NexusGenRootTypes['Media'] | null> | null; // [Media]
     title: string | null; // String
   }
   Query: { // field return type
     encryptTest: string; // String!
-    getRoles: Array<NexusGenRootTypes['Role'] | null>; // [Role]!
+    getRoles: Array<NexusGenEnums['RoleType'] | null>; // [RoleType]!
     getUploadSignedUrl: string; // String!
     getUserById: NexusGenRootTypes['User']; // User!
-  }
-  Role: { // field return type
-    id: string | null; // String
-    name: string | null; // String
   }
   Unauthorized: { // field return type
     message: string | null; // String
@@ -133,7 +133,7 @@ export interface NexusGenFieldTypes {
   User: { // field return type
     id: string | null; // String
     name: string | null; // String
-    role: NexusGenRootTypes['Role'] | null; // Role
+    role: string | null; // String
   }
   UserNotFound: { // field return type
     message: string | null; // String
@@ -153,7 +153,8 @@ export interface NexusGenFieldTypeNames {
     caption: 'String'
     id: 'String'
     title: 'String'
-    type: 'String'
+    type: 'MediaType'
+    url: 'String'
   }
   Mutation: { // field return type name
     authorize: 'AuthorizeResponse'
@@ -163,18 +164,16 @@ export interface NexusGenFieldTypeNames {
   Post: { // field return type name
     body: 'String'
     contributors: 'User'
+    date: 'String'
     id: 'String'
+    media: 'Media'
     title: 'String'
   }
   Query: { // field return type name
     encryptTest: 'String'
-    getRoles: 'Role'
+    getRoles: 'RoleType'
     getUploadSignedUrl: 'String'
     getUserById: 'User'
-  }
-  Role: { // field return type name
-    id: 'String'
-    name: 'String'
   }
   Unauthorized: { // field return type name
     message: 'String'
@@ -183,7 +182,7 @@ export interface NexusGenFieldTypeNames {
   User: { // field return type name
     id: 'String'
     name: 'String'
-    role: 'Role'
+    role: 'String'
   }
   UserNotFound: { // field return type name
     message: 'String'

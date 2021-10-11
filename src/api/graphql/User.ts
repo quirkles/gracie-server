@@ -1,6 +1,5 @@
 import {extendType, mutationField, nonNull, objectType, stringArg, unionType} from 'nexus';
 import {getToken} from '../auth';
-import {Role} from './Role';
 import {decrypt, encrypt} from '../encrypt';
 import {AlternateResponse, resolveAlternateResponse} from './AlternateResponses';
 
@@ -9,12 +8,7 @@ export const User = objectType({
 	definition(t) {
 		t.string('id');
 		t.string('name');
-		t.field('role', {
-			type: Role,
-			resolve(root, _args, ctx) {
-				return ctx.prisma.user.findUnique({where: {id: root.id as string}, include: {role: true}}).then(user => user?.role || null);
-			}
-		});
+		t.string('role');
 	}
 });
 
@@ -116,8 +110,7 @@ export const authorize = mutationField('authorize', {
 		const encryptedPassword = await encrypt(password);
 		console.log(encryptedPassword) //eslint-disable-line
 		const user = await ctx.prisma.user.findFirst({
-			where: {name, password: encryptedPassword},
-			include: {role: true}
+			where: {name, password: encryptedPassword}
 		});
 		if (!user) {
 			return {
@@ -164,13 +157,7 @@ export const createUser = mutationField('createUser', {
 				data: {
 					name,
 					password: encryptedPassword,
-					role: {
-						connect: {
-							name: roleName
-						}
-					}
 				},
-				include: {role: true}
 			});
 		} catch {
 			return {

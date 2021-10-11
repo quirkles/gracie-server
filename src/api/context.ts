@@ -41,7 +41,7 @@ export const createContext = ({req} : {req: Request}): Context => {
 			const token = authHeader.split('Bearer ')[1];
 			session = verifyToken(token);
 		} catch (err) {
-			baseLogger.error(err, 'Failed to verify jwt');
+			baseLogger.error(err as Error, 'Failed to verify jwt');
 		}
 	}
 

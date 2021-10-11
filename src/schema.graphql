@@ -11,14 +11,15 @@ type BadInput {
 
 input CreateMediaInput {
   caption: String
-  title: String!
-  type: MediaType
+  title: String
+  type: MediaType!
   url: String!
 }
 
 input CreatePostInput {
   body: String
-  media: [CreateMediaInput]
+  date: String
+  media: [CreateMediaInput!]
   title: String!
 }
 
@@ -34,7 +35,8 @@ type Media {
   caption: String
   id: String
   title: String
-  type: String
+  type: MediaType
+  url: String!
 }
 
 enum MediaType {
@@ -50,20 +52,29 @@ type Mutation {
 type Post {
   body: String
   contributors: [User]
+  date: String
   id: String
+  media: [Media]
   title: String
 }
 
 type Query {
   encryptTest(text: String!): String!
-  getRoles: [Role]!
+  getRoles: [RoleType]!
   getUploadSignedUrl(input: GetUploadSignedUrlInput!): String!
   getUserById: User!
 }
 
-type Role {
-  id: String
-  name: String
+enum RoleType {
+  AUNTIE
+  DAD
+  FRIEND
+  GRANDDAD
+  GRANDMA
+  ME
+  MUM
+  NO_RELATION
+  UNCLE
 }
 
 type Unauthorized {
@@ -74,7 +85,7 @@ type Unauthorized {
 type User {
   id: String
   name: String
-  role: Role
+  role: String
 }
 
 type UserNotFound {

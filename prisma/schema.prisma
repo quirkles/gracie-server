@@ -32,7 +32,8 @@ model User {
 
 model Post {
   id               String  @id @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
-  title            String @db.VarChar(50)
+  title            String @db.VarChar(255)
+  date             DateTime           @default(now())
   body             String?     @db.Text
   contributors     UsersOnPosts[]
   media     Media[]
@@ -66,12 +67,12 @@ enum MediaType {
 
 model Media {
   id           String  @id                   @default(dbgenerated("gracie.uuid_generate_v4()")) @db.Uuid
-  title        String  @db.VarChar(50)
+  title        String?  @db.VarChar(255)
   caption      String? @db.Text
-  url          String  @db.VarChar(50)
+  url          String  @db.VarChar(255)
   postId String @map("post_id") @db.Uuid
   post Post @relation(fields: [postId], references: [id])
-  role  MediaType    @default(IMAGE)
+  type  MediaType    @default(IMAGE)
 
   @@map("media")
 }

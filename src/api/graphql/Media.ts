@@ -10,7 +10,8 @@ export const Media = objectType({
 		t.string('id');
 		t.string('title');
 		t.string('caption');
-		t.string('type');
+		t.nonNull.string('url');
+		t.field('type', {type: MediaType});
 	}
 });
 
@@ -37,8 +38,6 @@ export const GetUploadSignedUrl = extendType({
 
 				const bucket = storage.bucket(IMAGE_BUCKET_NAME);
 				const file = bucket.file(fileName);
-				console.log(IMAGE_BUCKET_NAME) //eslint-disable-line
-				console.log(fileName) //eslint-disable-line
 				const config: GetSignedUrlConfig = {
 					version: 'v4',
 					action: 'write',
@@ -67,10 +66,10 @@ const MediaType = enumType({
 export const CreateMediaInput = inputObjectType({
 	name: 'CreateMediaInput',
 	definition(t) {
-		t.nonNull.string('title');
+		t.string('title');
 		t.string('caption');
 		t.nonNull.string('url');
-		t.field('type', {type: MediaType});
+		t.nonNull.field('type', {type: MediaType});
 	}
 });
 
