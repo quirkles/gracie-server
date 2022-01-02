@@ -1,5 +1,5 @@
 import {extendType, mutationField, nonNull, objectType, stringArg, unionType} from 'nexus';
-import {getToken} from '../auth';
+import {getToken, verifyToken} from '../auth';
 import {decrypt, encrypt} from '../encrypt';
 import {AlternateResponse, resolveAlternateResponse} from './AlternateResponses';
 
@@ -29,16 +29,21 @@ export const UserNotFound = objectType({
 	}
 });
 
-export const UserQuery = extendType({
+export const validateTokenQuery = extendType({
 	type: 'Query',
 	definition(t) {
-		t.nonNull.field('getUserById', {
-			type: 'User',
-			resolve() {
-				return {
-					id: 'abcd',
-					name: 'harry'
-				};
+		t.nonNull.field('validateToken', {
+			type: 'Boolean',
+			args: {
+				token: nonNull(stringArg())
+			},
+			resolve(_root, args, _ctx) {
+				try {
+					verifyToken(args.token);
+					return true;
+				} catch {
+					return false;
+				}
 			}
 		});
 	}
@@ -64,11 +69,21 @@ export const encryptTest = extendType({
 export const AuthorizeResponse = unionType({
 	name: 'AuthorizeResponse',
 	definition(t) {
-		t.members('UserWithToken', 'UserNotFound');
+		t.members('UserWithToken', 'UserNotFound', 'ServerError');
 	},
 	resolveType(item) {
-		const __typename =
-			'message' in item ? 'UserNotFound' : 'token' in item ? 'UserWithToken' : null;
+		console.log(item) //eslint-disable-line
+		let __typename: 'UserWithToken' | 'UserNotFound' | 'ServerError' | null = null;
+		if ('message' in item) {
+			if ('reason' in item) {
+				__typename = resolveAlternateResponse(item as AlternateResponse) as 'UserNotFound' | 'ServerError';
+			} else {
+				__typename = 'UserNotFound';
+			}
+		} else if ('user' in item && 'token' in item) {
+			__typename = 'UserWithToken';
+		}
+
 		if (!__typename) {
 			throw new Error('Could not resolve the type of data passed to union type "LoginUserResponse"');
 		}
@@ -80,11 +95,10 @@ export const AuthorizeResponse = unionType({
 export const CreateUserResponse = unionType({
 	name: 'CreateUserResponse',
 	definition(t) {
-		t.members('User', 'BadInput', 'Unauthorized');
+		t.members('User', 'BadInput', 'Unauthorized', 'ServerError');
 	},
 	resolveType(item) {
-		console.log(item) //eslint-disable-line
-		let __typename: 'BadInput' | 'Unauthorized' | 'User' | null = null;
+		let __typename: 'BadInput' | 'Unauthorized' | 'User' | 'ServerError' | null = null;
 		if ('message' in item && 'reason' in item) {
 			__typename = resolveAlternateResponse(item as AlternateResponse);
 		} else if ('id' in item) {
@@ -108,10 +122,18 @@ export const authorize = mutationField('authorize', {
 	async resolve(_root, args, ctx) {
 		const {name, password} = args;
 		const encryptedPassword = await encrypt(password);
-		console.log(encryptedPassword) //eslint-disable-line
-		const user = await ctx.prisma.user.findFirst({
-			where: {name, password: encryptedPassword}
-		});
+		let user;
+		try {
+			user = await ctx.prisma.user.findFirst({
+				where: {name, password: encryptedPassword}
+			});
+		} catch (err) {
+			return {
+				message: (err as Error).message,
+				reason: 'Unknown'
+			};
+		}
+
 		if (!user) {
 			return {
 				message: 'No matching user found'
@@ -150,14 +172,14 @@ export const createUser = mutationField('createUser', {
 			};
 		}
 
-		const {name, password, roleName} = args;
+		const {name, password} = args;
 		const encryptedPassword = await encrypt(password);
 		try {
 			return await ctx.prisma.user.create({
 				data: {
 					name,
-					password: encryptedPassword,
-				},
+					password: encryptedPassword
+				}
 			});
 		} catch {
 			return {

@@ -14,20 +14,22 @@ declare global {
 }
 
 export interface NexusGenInputs {
-  CreateMediaInput: { // input type
+  GetUploadSignedUrlInput: { // input type
+    fileName: string; // String!
+  }
+  SaveMediaInput: { // input type
     caption?: string | null; // String
+    id?: string | null; // String
     title?: string | null; // String
     type: NexusGenEnums['MediaType']; // MediaType!
     url: string; // String!
   }
-  CreatePostInput: { // input type
+  SavePostInput: { // input type
     body?: string | null; // String
     date?: string | null; // String
-    media?: NexusGenInputs['CreateMediaInput'][] | null; // [CreateMediaInput!]
+    id?: string | null; // String
+    media?: NexusGenInputs['SaveMediaInput'][] | null; // [SaveMediaInput!]
     title: string; // String!
-  }
-  GetUploadSignedUrlInput: { // input type
-    fileName: string; // String!
   }
 }
 
@@ -49,21 +51,38 @@ export interface NexusGenObjects {
     message?: string | null; // String
     reason?: string | null; // String
   }
+  Edge: { // root type
+    node?: NexusGenRootTypes['Post'] | null; // Post
+  }
   Media: { // root type
     caption?: string | null; // String
     id?: string | null; // String
     title?: string | null; // String
-    type?: NexusGenEnums['MediaType'] | null; // MediaType
+    type: NexusGenEnums['MediaType']; // MediaType!
     url: string; // String!
   }
   Mutation: {};
+  PageInfo: { // root type
+    endCursor?: string | null; // String
+    hasNextPage?: boolean | null; // Boolean
+    hasPreviousPage?: boolean | null; // Boolean
+    startCursor?: string | null; // String
+  }
   Post: { // root type
     body?: string | null; // String
     date?: string | null; // String
     id?: string | null; // String
     title?: string | null; // String
   }
+  PostConnection: { // root type
+    edges: Array<NexusGenRootTypes['Edge'] | null>; // [Edge]!
+    pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
+  }
   Query: {};
+  ServerError: { // root type
+    message?: string | null; // String
+    reason?: string | null; // String
+  }
   Unauthorized: { // root type
     message?: string | null; // String
     reason?: string | null; // String
@@ -86,9 +105,9 @@ export interface NexusGenInterfaces {
 }
 
 export interface NexusGenUnions {
-  AuthorizeResponse: NexusGenRootTypes['UserNotFound'] | NexusGenRootTypes['UserWithToken'];
-  CreatePostResponse: NexusGenRootTypes['BadInput'] | NexusGenRootTypes['Post'] | NexusGenRootTypes['Unauthorized'];
-  CreateUserResponse: NexusGenRootTypes['BadInput'] | NexusGenRootTypes['Unauthorized'] | NexusGenRootTypes['User'];
+  AuthorizeResponse: NexusGenRootTypes['ServerError'] | NexusGenRootTypes['UserNotFound'] | NexusGenRootTypes['UserWithToken'];
+  CreateUserResponse: NexusGenRootTypes['BadInput'] | NexusGenRootTypes['ServerError'] | NexusGenRootTypes['Unauthorized'] | NexusGenRootTypes['User'];
+  SavePostResponse: NexusGenRootTypes['BadInput'] | NexusGenRootTypes['Post'] | NexusGenRootTypes['ServerError'] | NexusGenRootTypes['Unauthorized'];
 }
 
 export type NexusGenRootTypes = NexusGenObjects & NexusGenUnions
@@ -100,31 +119,49 @@ export interface NexusGenFieldTypes {
     message: string | null; // String
     reason: string | null; // String
   }
+  Edge: { // field return type
+    node: NexusGenRootTypes['Post'] | null; // Post
+  }
   Media: { // field return type
     caption: string | null; // String
     id: string | null; // String
     title: string | null; // String
-    type: NexusGenEnums['MediaType'] | null; // MediaType
+    type: NexusGenEnums['MediaType']; // MediaType!
     url: string; // String!
   }
   Mutation: { // field return type
     authorize: NexusGenRootTypes['AuthorizeResponse'] | null; // AuthorizeResponse
-    createPost: NexusGenRootTypes['CreatePostResponse'] | null; // CreatePostResponse
     createUser: NexusGenRootTypes['CreateUserResponse'] | null; // CreateUserResponse
+    savePost: NexusGenRootTypes['SavePostResponse'] | null; // SavePostResponse
+  }
+  PageInfo: { // field return type
+    endCursor: string | null; // String
+    hasNextPage: boolean | null; // Boolean
+    hasPreviousPage: boolean | null; // Boolean
+    startCursor: string | null; // String
   }
   Post: { // field return type
     body: string | null; // String
-    contributors: Array<NexusGenRootTypes['User'] | null> | null; // [User]
+    contributors: NexusGenRootTypes['User'][] | null; // [User!]
     date: string | null; // String
     id: string | null; // String
-    media: Array<NexusGenRootTypes['Media'] | null> | null; // [Media]
+    media: NexusGenRootTypes['Media'][] | null; // [Media!]
     title: string | null; // String
+  }
+  PostConnection: { // field return type
+    edges: Array<NexusGenRootTypes['Edge'] | null>; // [Edge]!
+    pageInfo: NexusGenRootTypes['PageInfo']; // PageInfo!
   }
   Query: { // field return type
     encryptTest: string; // String!
+    getPostConnection: NexusGenRootTypes['PostConnection']; // PostConnection!
     getRoles: Array<NexusGenEnums['RoleType'] | null>; // [RoleType]!
     getUploadSignedUrl: string; // String!
-    getUserById: NexusGenRootTypes['User']; // User!
+    validateToken: boolean; // Boolean!
+  }
+  ServerError: { // field return type
+    message: string | null; // String
+    reason: string | null; // String
   }
   Unauthorized: { // field return type
     message: string | null; // String
@@ -149,6 +186,9 @@ export interface NexusGenFieldTypeNames {
     message: 'String'
     reason: 'String'
   }
+  Edge: { // field return type name
+    node: 'Post'
+  }
   Media: { // field return type name
     caption: 'String'
     id: 'String'
@@ -158,8 +198,14 @@ export interface NexusGenFieldTypeNames {
   }
   Mutation: { // field return type name
     authorize: 'AuthorizeResponse'
-    createPost: 'CreatePostResponse'
     createUser: 'CreateUserResponse'
+    savePost: 'SavePostResponse'
+  }
+  PageInfo: { // field return type name
+    endCursor: 'String'
+    hasNextPage: 'Boolean'
+    hasPreviousPage: 'Boolean'
+    startCursor: 'String'
   }
   Post: { // field return type name
     body: 'String'
@@ -169,11 +215,20 @@ export interface NexusGenFieldTypeNames {
     media: 'Media'
     title: 'String'
   }
+  PostConnection: { // field return type name
+    edges: 'Edge'
+    pageInfo: 'PageInfo'
+  }
   Query: { // field return type name
     encryptTest: 'String'
+    getPostConnection: 'PostConnection'
     getRoles: 'RoleType'
     getUploadSignedUrl: 'String'
-    getUserById: 'User'
+    validateToken: 'Boolean'
+  }
+  ServerError: { // field return type name
+    message: 'String'
+    reason: 'String'
   }
   Unauthorized: { // field return type name
     message: 'String'
@@ -199,13 +254,13 @@ export interface NexusGenArgTypes {
       name: string; // String!
       password: string; // String!
     }
-    createPost: { // args
-      input: NexusGenInputs['CreatePostInput']; // CreatePostInput!
-    }
     createUser: { // args
       name: string; // String!
       password: string; // String!
       roleName: string; // String!
+    }
+    savePost: { // args
+      input: NexusGenInputs['SavePostInput']; // SavePostInput!
     }
   }
   Query: {
@@ -215,13 +270,16 @@ export interface NexusGenArgTypes {
     getUploadSignedUrl: { // args
       input: NexusGenInputs['GetUploadSignedUrlInput']; // GetUploadSignedUrlInput!
     }
+    validateToken: { // args
+      token: string; // String!
+    }
   }
 }
 
 export interface NexusGenAbstractTypeMembers {
-  AuthorizeResponse: "UserNotFound" | "UserWithToken"
-  CreatePostResponse: "BadInput" | "Post" | "Unauthorized"
-  CreateUserResponse: "BadInput" | "Unauthorized" | "User"
+  AuthorizeResponse: "ServerError" | "UserNotFound" | "UserWithToken"
+  CreateUserResponse: "BadInput" | "ServerError" | "Unauthorized" | "User"
+  SavePostResponse: "BadInput" | "Post" | "ServerError" | "Unauthorized"
 }
 
 export interface NexusGenTypeInterfaces {
@@ -241,7 +299,7 @@ export type NexusGenUnionNames = keyof NexusGenUnions;
 
 export type NexusGenObjectsUsingAbstractStrategyIsTypeOf = never;
 
-export type NexusGenAbstractsUsingStrategyResolveType = "AuthorizeResponse" | "CreatePostResponse" | "CreateUserResponse";
+export type NexusGenAbstractsUsingStrategyResolveType = "AuthorizeResponse" | "CreateUserResponse" | "SavePostResponse";
 
 export type NexusGenFeaturesConfig = {
   abstractTypeStrategies: {

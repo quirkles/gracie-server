@@ -11,7 +11,7 @@ export const Media = objectType({
 		t.string('title');
 		t.string('caption');
 		t.nonNull.string('url');
-		t.field('type', {type: MediaType});
+		t.nonNull.field('type', {type: MediaType});
 	}
 });
 
@@ -63,60 +63,13 @@ const MediaType = enumType({
 	members: ['IMAGE']
 });
 
-export const CreateMediaInput = inputObjectType({
-	name: 'CreateMediaInput',
+export const SaveMediaInput = inputObjectType({
+	name: 'SaveMediaInput',
 	definition(t) {
+		t.string('id');
 		t.string('title');
 		t.string('caption');
 		t.nonNull.string('url');
 		t.nonNull.field('type', {type: MediaType});
 	}
 });
-
-// Export const createMedia = mutationField('createUser', {
-// 	type: 'CreateUserResponse',
-// 	args: {
-// 		input: arg({type: CreateMediaInput})
-// 	},
-// 	async resolve(_root, args, ctx) {
-// 		const {session} = ctx;
-// 		const {id} = session || {};
-// 		if (!id) {
-// 			return {
-// 				message: 'Not permitted',
-// 				reason: 'Unauthorized'
-// 			};
-// 		}
-//
-// 		const user = await ctx.prisma.user.findUnique({where: {id}});
-//
-// 		if (!user?.isAdmin) {
-// 			return {
-// 				message: 'Not permitted',
-// 				reason: 'Unauthorized'
-// 			};
-// 		}
-//
-// 		const {name, password, roleName} = args;
-// 		const encryptedPassword = await encrypt(password);
-// 		try {
-// 			return await ctx.prisma.user.create({
-// 				data: {
-// 					name,
-// 					password: encryptedPassword,
-// 					role: {
-// 						connect: {
-// 							name: roleName
-// 						}
-// 					}
-// 				},
-// 				include: {role: true}
-// 			});
-// 		} catch {
-// 			return {
-// 				message: 'Failed to create user',
-// 				reason: 'BadInput'
-// 			};
-// 		}
-// 	}
-// });

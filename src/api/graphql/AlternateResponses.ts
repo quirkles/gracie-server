@@ -16,19 +16,30 @@ export const Unauthorized = objectType({
 	}
 });
 
-export type AlternateResponseReason = 'BadInput' | 'Unauthorized'
+export const ServerError = objectType({
+	name: 'ServerError',
+	definition(t) {
+		t.string('message');
+		t.string('reason');
+	}
+});
+
+export type AlternateResponseType = 'BadInput' | 'Unauthorized' | 'ServerError'
+export type AlternateResponseReason = 'BadInput' | 'Unauthorized' | 'Unknown'
 
 export interface AlternateResponse {
 	message: string;
 	reason: AlternateResponseReason;
 }
 
-export const resolveAlternateResponse = (alternateResponse: AlternateResponse): AlternateResponseReason => {
+export const resolveAlternateResponse = (alternateResponse: AlternateResponse): AlternateResponseType => {
 	switch (alternateResponse.reason) {
 		case 'BadInput':
 			return 'BadInput';
 		case 'Unauthorized':
 			return 'Unauthorized';
+		case 'Unknown':
+			return 'ServerError';
 		default:
 			throw new Error(`Unknown alternate response: ${alternateResponse.reason}`);
 	}

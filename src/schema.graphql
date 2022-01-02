@@ -2,30 +2,18 @@
 ### Do not make changes to this file directly
 
 
-union AuthorizeResponse = UserNotFound | UserWithToken
+union AuthorizeResponse = ServerError | UserNotFound | UserWithToken
 
 type BadInput {
   message: String
   reason: String
 }
 
-input CreateMediaInput {
-  caption: String
-  title: String
-  type: MediaType!
-  url: String!
+union CreateUserResponse = BadInput | ServerError | Unauthorized | User
+
+type Edge {
+  node: Post
 }
-
-input CreatePostInput {
-  body: String
-  date: String
-  media: [CreateMediaInput!]
-  title: String!
-}
-
-union CreatePostResponse = BadInput | Post | Unauthorized
-
-union CreateUserResponse = BadInput | Unauthorized | User
 
 input GetUploadSignedUrlInput {
   fileName: String!
@@ -35,7 +23,7 @@ type Media {
   caption: String
   id: String
   title: String
-  type: MediaType
+  type: MediaType!
   url: String!
 }
 
@@ -45,24 +33,37 @@ enum MediaType {
 
 type Mutation {
   authorize(name: String!, password: String!): AuthorizeResponse
-  createPost(input: CreatePostInput!): CreatePostResponse
   createUser(name: String!, password: String!, roleName: String!): CreateUserResponse
+  savePost(input: SavePostInput!): SavePostResponse
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  startCursor: String
 }
 
 type Post {
   body: String
-  contributors: [User]
+  contributors: [User!]
   date: String
   id: String
-  media: [Media]
+  media: [Media!]
   title: String
+}
+
+type PostConnection {
+  edges: [Edge]!
+  pageInfo: PageInfo!
 }
 
 type Query {
   encryptTest(text: String!): String!
+  getPostConnection: PostConnection!
   getRoles: [RoleType]!
   getUploadSignedUrl(input: GetUploadSignedUrlInput!): String!
-  getUserById: User!
+  validateToken(token: String!): Boolean!
 }
 
 enum RoleType {
@@ -75,6 +76,29 @@ enum RoleType {
   MUM
   NO_RELATION
   UNCLE
+}
+
+input SaveMediaInput {
+  caption: String
+  id: String
+  title: String
+  type: MediaType!
+  url: String!
+}
+
+input SavePostInput {
+  body: String
+  date: String
+  id: String
+  media: [SaveMediaInput!]
+  title: String!
+}
+
+union SavePostResponse = BadInput | Post | ServerError | Unauthorized
+
+type ServerError {
+  message: String
+  reason: String
 }
 
 type Unauthorized {
