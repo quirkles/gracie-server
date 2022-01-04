@@ -1,7 +1,6 @@
-import {nonNull, objectType} from 'nexus';
+import {arg, enumType, inputObjectType, nonNull, objectType} from 'nexus';
 import {NexusObjectTypeDef} from 'nexus/dist/definitions/objectType';
 import {NexusGenFieldTypeNames} from '../../nexus-typegen';
-import {User} from './User';
 
 export const PageInfo = objectType({
 	name: 'PageInfo',
@@ -12,6 +11,50 @@ export const PageInfo = objectType({
 		t.string('endCursor');
 	}
 });
+
+const PaginationArguments = inputObjectType({
+	name: 'PaginationArguments',
+	definition(t) {
+		t.string('before');
+		t.int('last');
+		t.string('after');
+		t.int('first');
+	}
+});
+
+export const SortOrderEnum = enumType({
+	name: 'SortOrderEnum',
+	members: {
+		ASC: 'ASC',
+		DESC: 'DESC'
+	}
+});
+
+const SortArguments = inputObjectType({
+	name: 'SortArguments',
+	definition(t) {
+		t.string('sortBy');
+		t.field('sortOrder', {type: SortOrderEnum});
+	}
+});
+
+export const connectionArguments = {
+	sortArguments: arg({
+		type: SortArguments,
+		default: {
+			sortOrder: 'ASC',
+			sortBy: 'createdAt'
+		}
+	}),
+	paginationArguments: arg({
+		type: PaginationArguments,
+		description: 'Pagination arguments as defined here: https://relay.dev/graphql/connections.htm#sec-Arguments',
+		default: {
+			first: 10
+		}
+	})
+};
+
 export const createConnectionType = <T extends keyof NexusGenFieldTypeNames>(typeForConnection: NexusObjectTypeDef<T>) => {
 	const typeName = typeForConnection.name;
 	return objectType({
@@ -21,6 +64,7 @@ export const createConnectionType = <T extends keyof NexusGenFieldTypeNames>(typ
 				type: objectType({
 					name: 'Edge',
 					definition(t) {
+						t.string('cursor');
 						t.field('node', {
 							type: typeForConnection
 						});
@@ -33,12 +77,3 @@ export const createConnectionType = <T extends keyof NexusGenFieldTypeNames>(typ
 		}
 	});
 };
-// ObjectType({
-//     name: 'User',
-// 	definition(t) {
-//         t.field('location', {
-// 			// reference the friend type via type def reference
-// 			type: Location,
-// 		})
-// 	},
-// }

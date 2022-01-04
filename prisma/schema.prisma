@@ -37,6 +37,7 @@ model Post {
   body             String?     @db.Text
   contributors     UsersOnPosts[]
   media     Media[]
+  createdAt             DateTime           @default(now())
 
   @@map("posts")
 }

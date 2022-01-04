@@ -1,0 +1,12 @@
+-- AlterTable
+ALTER TABLE "media" ALTER COLUMN "id" SET DEFAULT gracie.uuid_generate_v4();
+
+-- AlterTable
+ALTER TABLE "posts" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ALTER COLUMN "id" SET DEFAULT gracie.uuid_generate_v4();
+
+-- AlterTable
+ALTER TABLE "user_post_role" ALTER COLUMN "id" SET DEFAULT gracie.uuid_generate_v4();
+
+-- AlterTable
+ALTER TABLE "users" ALTER COLUMN "id" SET DEFAULT gracie.uuid_generate_v4();

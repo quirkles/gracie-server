@@ -12,6 +12,7 @@ type BadInput {
 union CreateUserResponse = BadInput | ServerError | Unauthorized | User
 
 type Edge {
+  cursor: String
   node: Post
 }
 
@@ -44,6 +45,13 @@ type PageInfo {
   startCursor: String
 }
 
+input PaginationArguments {
+  after: String
+  before: String
+  first: Int
+  last: Int
+}
+
 type Post {
   body: String
   contributors: [User!]
@@ -58,9 +66,17 @@ type PostConnection {
   pageInfo: PageInfo!
 }
 
+union PostConnectionResponse = BadInput | PostConnection | ServerError | Unauthorized
+
 type Query {
   encryptTest(text: String!): String!
-  getPostConnection: PostConnection!
+  getPosts(
+    """
+    Pagination arguments as defined here: https://relay.dev/graphql/connections.htm#sec-Arguments
+    """
+    paginationArguments: PaginationArguments = {first: 10}
+    sortArguments: SortArguments = {sortBy: "createdAt", sortOrder: ASC}
+  ): PostConnectionResponse!
   getRoles: [RoleType]!
   getUploadSignedUrl(input: GetUploadSignedUrlInput!): String!
   validateToken(token: String!): Boolean!
@@ -99,6 +115,16 @@ union SavePostResponse = BadInput | Post | ServerError | Unauthorized
 type ServerError {
   message: String
   reason: String
+}
+
+input SortArguments {
+  sortBy: String
+  sortOrder: SortOrderEnum
+}
+
+enum SortOrderEnum {
+  ASC
+  DESC
 }
 
 type Unauthorized {

@@ -1,10 +1,13 @@
+import {Post as PostModel, Prisma} from '@prisma/client';
+
 import {arg, extendType, inputObjectType, mutationField, nonNull, objectType, unionType} from 'nexus';
 import {User} from './User';
 import {AlternateResponse, resolveAlternateResponse} from './AlternateResponses';
 import {SaveMediaInput, Media} from './Media';
-import {v4} from 'uuid';
+import {v4, validate} from 'uuid';
 import {PubSub} from '@google-cloud/pubsub';
-import {createConnectionType} from './GenericConnection';
+import {connectionArguments, createConnectionType} from './GenericConnection';
+import {prisma} from '../prisma';
 
 export const Post = objectType({
 	name: 'Post',
@@ -69,6 +72,7 @@ export const SavePostInput = inputObjectType({
 		t.list.field('media', {type: nonNull(SaveMediaInput)});
 	}
 });
+
 export const savePost = mutationField('savePost', {
 	type: 'SavePostResponse',
 	args: {
@@ -229,21 +233,169 @@ export const savePost = mutationField('savePost', {
 	}
 });
 
-export const GetPostConnection = extendType({
+export const PostConnection = createConnectionType(Post);
+
+export const PostConnectionResponse = unionType({
+	name: 'PostConnectionResponse',
+	definition(t) {
+		t.members('PostConnection', 'BadInput', 'Unauthorized', 'ServerError');
+	},
+	resolveType(item) {
+		let __typename: 'BadInput' | 'Unauthorized' | 'PostConnection' | 'ServerError' | null = null;
+		if ('message' in item && 'reason' in item) {
+			__typename = resolveAlternateResponse(item as AlternateResponse);
+		} else if ('edges' in item) {
+			__typename = 'PostConnection';
+		}
+
+		if (__typename === null) {
+			throw new Error('Could not resolve the type of data passed to union type "PostConnectionResponse"');
+		}
+
+		return Promise.resolve(__typename);
+	}
+});
+
+export const postConnection = extendType({
 	type: 'Query',
 	definition(t) {
-		t.nonNull.field('getPostConnection', {
-			type: createConnectionType(Post),
-			resolve(_root, _args, _ctx) {
-				return Promise.resolve({
-					edges: [],
+		t.nonNull.field('getPosts', {
+			type: 'PostConnectionResponse',
+			args: connectionArguments,
+			async resolve(_root, args, _ctx) {
+				let errorMessage = '';
+				let errorReason: string | null = null;
+
+				const {paginationArguments, sortArguments} = args;
+				const {
+					after,
+					before,
+					first,
+					last
+				} = paginationArguments || {};
+
+				const {sortBy = 'createdAt', sortOrder = 'ASC'} = sortArguments || {};
+
+				let beforePost: PostModel | null | undefined;
+				let afterPost: PostModel | null | undefined;
+
+				const ids = [];
+
+				if (after) {
+					if (validate(after)) {
+						ids.push(after);
+					} else {
+						errorMessage += 'Provided value for after is not a valid uuid. ';
+						errorReason = 'BadInput';
+					}
+				}
+
+				if (before) {
+					if (validate(before)) {
+						ids.push(before);
+					} else {
+						errorMessage += 'Provided value for before is not a valid uuid.';
+						errorReason = 'BadInput';
+					}
+				}
+
+				if (errorReason) {
+					return {
+						reason: errorReason,
+						message: errorMessage
+					};
+				}
+
+				if (ids.length) {
+					const posts = await prisma.post.findMany({
+						where: {
+							id: {in: [before, after].filter(Boolean) as string[]}
+						}
+					});
+					beforePost = (before && posts.find(post => (post).id === before)) as PostModel | undefined;
+					afterPost = (after && posts.find(post => post.id === after)) as PostModel | undefined;
+					if (before && !beforePost) {
+						return {
+							reason: 'BadInput',
+							message: 'before must be a valid cursor if passed'
+						};
+					}
+
+					if (after && !afterPost) {
+						return {
+							reason: 'BadInput',
+							message: 'after must be a valid cursor if passed'
+						};
+					}
+				}
+
+				if (!(before && after) && !(first || last)) {
+					return {
+						reason: 'BadInput',
+						message: 'if neither before nor after are provided then at least one of first or last must be'
+					};
+				}
+
+				if (beforePost || afterPost) {
+					const validSortByByKeys = Object.keys((afterPost || beforePost) as PostModel).filter(key => key in ((beforePost || afterPost) as PostModel));
+
+					console.log(validSortByByKeys) //eslint-disable-line
+
+					if (!validSortByByKeys.includes(sortBy as string)) {
+						return {
+							reason: 'BadInput',
+							message: `Invalid sortBy argument, valid options are: ${validSortByByKeys.join(', ')}`
+						};
+					}
+				}
+
+				const queryParams: Prisma.PostFindManyArgs = {
+					orderBy: {
+						[(sortBy || 'createdAt') as string]: (sortOrder || 'asc').toLowerCase()
+					}
+				};
+
+				if (beforePost || afterPost) {
+					const where: Prisma.PostWhereInput = {
+						AND: []
+					};
+					if (beforePost) {
+						(where.AND as Prisma.PostWhereInput[]).push({
+							[sortBy as string]: {
+								[sortOrder === 'ASC' ? 'lt' : 'gt']: beforePost[sortBy as keyof PostModel]
+							}
+						});
+					}
+
+					if (afterPost) {
+						(where.AND as Prisma.PostWhereInput[]).push({
+							[sortBy as string]: {
+								[sortOrder === 'ASC' ? 'gt' : 'lt']: afterPost[sortBy as keyof PostModel]
+							}
+						});
+					}
+
+					queryParams.where = where;
+				}
+
+				if (first || last) {
+					queryParams.take = (first || last) as number;
+				}
+
+				console.log(JSON.stringify(queryParams, null, 2)) //eslint-disable-line
+				const posts = await prisma.post.findMany(queryParams);
+				return {
+					edges: posts.map(p => ({
+						node: p,
+						cursor: p.id
+					})),
 					pageInfo: {
 						hasNextPage: true,
 						hasPreviousPage: true,
 						startCursor: 'a',
 						endCursor: 'b'
 					}
-				});
+				};
 			}
 		});
 	}
