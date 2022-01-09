@@ -76,8 +76,6 @@ export interface NexusGenObjects {
   Mutation: {};
   PageInfo: { // root type
     endCursor?: string | null; // String
-    hasNextPage?: boolean | null; // Boolean
-    hasPreviousPage?: boolean | null; // Boolean
     startCursor?: string | null; // String
   }
   Post: { // root type
@@ -150,8 +148,6 @@ export interface NexusGenFieldTypes {
   }
   PageInfo: { // field return type
     endCursor: string | null; // String
-    hasNextPage: boolean | null; // Boolean
-    hasPreviousPage: boolean | null; // Boolean
     startCursor: string | null; // String
   }
   Post: { // field return type
@@ -218,8 +214,6 @@ export interface NexusGenFieldTypeNames {
   }
   PageInfo: { // field return type name
     endCursor: 'String'
-    hasNextPage: 'Boolean'
-    hasPreviousPage: 'Boolean'
     startCursor: 'String'
   }
   Post: { // field return type name

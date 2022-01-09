@@ -5,8 +5,6 @@ import {NexusGenFieldTypeNames} from '../../nexus-typegen';
 export const PageInfo = objectType({
 	name: 'PageInfo',
 	definition(t) {
-		t.boolean('hasNextPage');
-		t.boolean('hasPreviousPage');
 		t.string('startCursor');
 		t.string('endCursor');
 	}

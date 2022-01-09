@@ -339,8 +339,6 @@ export const postConnection = extendType({
 				if (beforePost || afterPost) {
 					const validSortByByKeys = Object.keys((afterPost || beforePost) as PostModel).filter(key => key in ((beforePost || afterPost) as PostModel));
 
-					console.log(validSortByByKeys) //eslint-disable-line
-
 					if (!validSortByByKeys.includes(sortBy as string)) {
 						return {
 							reason: 'BadInput',
@@ -349,9 +347,13 @@ export const postConnection = extendType({
 					}
 				}
 
+				const sortOrderToUse = last && !first ?
+					sortOrder === 'DESC' ? 'ASC' : 'DESC' :
+					sortOrder || 'asc';
+
 				const queryParams: Prisma.PostFindManyArgs = {
 					orderBy: {
-						[(sortBy || 'createdAt') as string]: (sortOrder || 'asc').toLowerCase()
+						[(sortBy || 'createdAt') as string]: (sortOrderToUse).toLowerCase()
 					}
 				};
 
@@ -382,18 +384,20 @@ export const postConnection = extendType({
 					queryParams.take = (first || last) as number;
 				}
 
-				console.log(JSON.stringify(queryParams, null, 2)) //eslint-disable-line
 				const posts = await prisma.post.findMany(queryParams);
+
+				if (last && !first) {
+					posts.reverse();
+				}
+
 				return {
 					edges: posts.map(p => ({
 						node: p,
 						cursor: p.id
 					})),
 					pageInfo: {
-						hasNextPage: true,
-						hasPreviousPage: true,
-						startCursor: 'a',
-						endCursor: 'b'
+						startCursor: posts[0].id,
+						endCursor: posts[posts.length - 1].id
 					}
 				};
 			}
